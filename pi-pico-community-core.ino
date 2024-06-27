@@ -27,6 +27,7 @@ void setup()
     Serial1.println("Start Raspberry Pi Pico DHT22 Test!");
     Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
 }
+
 void readAndPrintSensorData()
 {
     Serial1.print("DHT22, \t");
