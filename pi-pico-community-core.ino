@@ -27,11 +27,8 @@ void setup()
     Serial1.println("Start Raspberry Pi Pico DHT22 Test!");
     Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
 }
-
-void loop()
+void readAndPrintSensorData()
 {
-    delay(3000);
-
     Serial1.print("DHT22, \t");
 
     uint32_t start = micros();
@@ -57,26 +54,37 @@ void loop()
         Serial1.print(stop - start);
         Serial1.println();
     }
+}
+
+void printStatistics()
+{
+    Serial1.println("\nTOT\tOK\tCRC\tTO\tCON\tACK_L\tACK_H\tUNK");
+    Serial1.print(stat.total);
+    Serial1.print("\t");
+    Serial1.print(stat.ok);
+    Serial1.print("\t");
+    Serial1.print(stat.crc_error);
+    Serial1.print("\t");
+    Serial1.print(stat.time_out);
+    Serial1.print("\t");
+    Serial1.print(stat.connect);
+    Serial1.print("\t");
+    Serial1.print(stat.ack_l);
+    Serial1.print("\t");
+    Serial1.print(stat.ack_h);
+    Serial1.print("\t");
+    Serial1.print(stat.unknown);
+    Serial1.println("\n");
+    Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
+}
+
+void loop()
+{
+    delay(3000);
+    readAndPrintSensorData();
 
     if (stat.total % 10 == 0)
     {
-        Serial1.println("\nTOT\tOK\tCRC\tTO\tCON\tACK_L\tACK_H\tUNK");
-        Serial1.print(stat.total);
-        Serial1.print("\t");
-        Serial1.print(stat.ok);
-        Serial1.print("\t");
-        Serial1.print(stat.crc_error);
-        Serial1.print("\t");
-        Serial1.print(stat.time_out);
-        Serial1.print("\t");
-        Serial1.print(stat.connect);
-        Serial1.print("\t");
-        Serial1.print(stat.ack_l);
-        Serial1.print("\t");
-        Serial1.print(stat.ack_h);
-        Serial1.print("\t");
-        Serial1.print(stat.unknown);
-        Serial1.println("\n");
-        Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
+      printStatistics();
     }
 }
