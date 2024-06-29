@@ -20,12 +20,59 @@ struct {
   uint32_t unknown;
 } stat = { 0, 0, 0, 0, 0, 0, 0, 0};
 
+#define RIGHT_LDR_PIN 26
+#define LEFT_LDR_PIN 27
+
+// LDR Characteristics
+const float GAMMA = 0.7;
+const float RL10 = 50;
+
 void setup()
 {
     Serial1.begin(115200);
     dht.begin();
     Serial1.println("Start Raspberry Pi Pico DHT22 Test!");
-    Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
+    // Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
+}
+
+void readAndPrintPhotoresistorData()
+{
+    int leftAnalogValue = analogRead(LEFT_LDR_PIN);
+    int rightAnalogValue = analogRead(RIGHT_LDR_PIN);
+
+    float leftVoltage = leftAnalogValue / 1024. * 5;
+    float rightVoltage = rightAnalogValue / 1024. * 5;
+
+    float leftResistance = 2000 * leftVoltage / (1 - leftVoltage / 5);
+    float rightResistance = 2000 * rightVoltage / (1 - rightVoltage / 5);
+
+    float leftLux = pow(RL10 * 1e3 * pow(10, GAMMA) / leftResistance, (1 / GAMMA));
+    float rightLux = pow(RL10 * 1e3 * pow(10, GAMMA) / rightResistance, (1 / GAMMA));
+    Serial1.print(" Left: ");
+    Serial1.print(leftLux);
+    Serial1.print(", Right: ");
+    Serial1.print(rightLux);
+    Serial1.println();
+    // if (leftLux == rightLux) {
+    //   Serial1.print("=> Same!\n");
+    // }
+    // else if (leftLux > rightLux) {
+    //   Serial1.print("=> Left!\n");
+    // } else {
+    //   Serial1.print("=> Right!\n");
+    // }
+}
+
+void loop()
+{
+    delay(1000);
+    readAndPrintSensorData();
+    readAndPrintPhotoresistorData();
+
+    if (stat.total % 10 == 0)
+    {
+      printStatistics();
+    }
 }
 
 void readAndPrintSensorData()
@@ -53,7 +100,8 @@ void readAndPrintSensorData()
         Serial1.print(t, 1);
         Serial1.print(",\t");
         Serial1.print(stop - start);
-        Serial1.println();
+        Serial1.print(",\t");
+        // Serial1.println();
     }
 }
 
@@ -77,15 +125,4 @@ void printStatistics()
     Serial1.print(stat.unknown);
     Serial1.println("\n");
     Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
-}
-
-void loop()
-{
-    delay(3000);
-    readAndPrintSensorData();
-
-    if (stat.total % 10 == 0)
-    {
-      printStatistics();
-    }
 }
