@@ -1,13 +1,9 @@
 #include <DHT.h>
-#include <Servo.h>
 
 // DHT22のDATAピンはデジタルピン7に接続
 #define DHTPIN 28
 // 接続するセンサの型番
 #define DHTTYPE DHT22
-#define RIGHT_LDR_PIN 26
-#define LEFT_LDR_PIN 27
-#define SERVO_PIN 22
 
 // センサーの初期化
 DHT dht(DHTPIN, DHTTYPE);
@@ -24,29 +20,26 @@ struct {
   uint32_t unknown;
 } stat = { 0, 0, 0, 0, 0, 0, 0, 0};
 
+#define RIGHT_LDR_PIN 26
+#define LEFT_LDR_PIN 27
+
 // LDR Characteristics
 const float GAMMA = 0.7;
 const float RL10 = 50;
-
-Servo myservo;  // create servo object to control a servo
-int pos = 90;    // variable to store the servo position
 
 void setup()
 {
     Serial1.begin(115200);
     dht.begin();
-    myservo.attach(SERVO_PIN);  // attaches the servo on pin 9 to the servo object
-    myservo.write(pos);
-    Serial1.println("Start Raspberry Pi Pico Test!");
+    Serial1.println("Start Raspberry Pi Pico DHT22 Test!");
     Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
 }
 
 void loop()
 {
-    delay(100);
-
+    delay(1000);
     handleHumidityAndTemperatureData();
-    handlePhotoresistorData();
+    rotateServo();
 
     if (stat.total % 10 == 0)
     {
@@ -54,7 +47,7 @@ void loop()
     }
 }
 
-void handlePhotoresistorData()
+void rotateServo()
 {
     int leftAnalogValue = analogRead(LEFT_LDR_PIN);
     int rightAnalogValue = analogRead(RIGHT_LDR_PIN);
