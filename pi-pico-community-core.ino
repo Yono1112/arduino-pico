@@ -35,7 +35,19 @@ void setup()
     // Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
 }
 
-void readAndPrintPhotoresistorData()
+void loop()
+{
+    delay(1000);
+    handleHumidityAndTemperatureData();
+    handlePhotoresistorData();
+
+    if (stat.total % 10 == 0)
+    {
+      printStatistics();
+    }
+}
+
+void handlePhotoresistorData()
 {
     int leftAnalogValue = analogRead(LEFT_LDR_PIN);
     int rightAnalogValue = analogRead(RIGHT_LDR_PIN);
@@ -63,19 +75,7 @@ void readAndPrintPhotoresistorData()
     // }
 }
 
-void loop()
-{
-    delay(1000);
-    readAndPrintSensorData();
-    readAndPrintPhotoresistorData();
-
-    if (stat.total % 10 == 0)
-    {
-      printStatistics();
-    }
-}
-
-void readAndPrintSensorData()
+void handleHumidityAndTemperatureData()
 {
     Serial1.print("DHT22, \t");
 
