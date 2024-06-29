@@ -1,9 +1,13 @@
 #include <DHT.h>
+#include <Servo.h>
 
 // DHT22のDATAピンはデジタルピン7に接続
 #define DHTPIN 28
 // 接続するセンサの型番
 #define DHTTYPE DHT22
+#define RIGHT_LDR_PIN 26
+#define LEFT_LDR_PIN 27
+#define SERVO_PIN 22
 
 // センサーの初期化
 DHT dht(DHTPIN, DHTTYPE);
@@ -20,24 +24,27 @@ struct {
   uint32_t unknown;
 } stat = { 0, 0, 0, 0, 0, 0, 0, 0};
 
-#define RIGHT_LDR_PIN 26
-#define LEFT_LDR_PIN 27
-
 // LDR Characteristics
 const float GAMMA = 0.7;
 const float RL10 = 50;
+
+Servo myservo;  // create servo object to control a servo
+int pos = 90;    // variable to store the servo position
 
 void setup()
 {
     Serial1.begin(115200);
     dht.begin();
-    Serial1.println("Start Raspberry Pi Pico DHT22 Test!");
-    // Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
+    myservo.attach(SERVO_PIN);  // attaches the servo on pin 9 to the servo object
+    myservo.write(pos);
+    Serial1.println("Start Raspberry Pi Pico Test!");
+    Serial1.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)\tTime (us)");
 }
 
 void loop()
 {
-    delay(1000);
+    delay(100);
+
     handleHumidityAndTemperatureData();
     handlePhotoresistorData();
 
@@ -65,14 +72,16 @@ void handlePhotoresistorData()
     Serial1.print(", Right: ");
     Serial1.print(rightLux);
     Serial1.println();
-    // if (leftLux == rightLux) {
-    //   Serial1.print("=> Same!\n");
-    // }
-    // else if (leftLux > rightLux) {
-    //   Serial1.print("=> Left!\n");
-    // } else {
-    //   Serial1.print("=> Right!\n");
-    // }
+
+    if (leftLux > rightLux) {
+        pos -= 10; // 左のセンサーがより明るい場合、左に回転
+        if (pos < 0) pos = 0; // 最小角度は0度
+    } else if (rightLux > leftLux) {
+        pos += 10; // 右のセンサーがより明るい場合、右に回転
+        if (pos > 180) pos = 180; // 最大角度は180度
+    }
+
+    myservo.write(pos); // サーボモーターを新しい位置に設定
 }
 
 void handleHumidityAndTemperatureData()
